@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://topology-observer/deployment/v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "socket_path", "bridge_state_path", "response_state_path",
+    "response_trust_path", "request_url", "pa_public_key_hex", "caller_uid", "caller_gid",
+    "workload_id", "client_executable_sha256", "rate_limit_per_minute", "identity_status"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://topology-observer/deployment/v3" },
+    "socket_path": { "type": "string", "pattern": "^/" },
+    "bridge_state_path": { "type": "string", "pattern": "^/" },
+    "response_state_path": { "type": "string", "pattern": "^/" },
+    "response_trust_path": { "type": "string", "pattern": "^/" },
+    "request_url": { "type": "string", "pattern": "^https://" },
+    "pa_public_key_hex": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "caller_uid": { "type": "integer", "minimum": 1 },
+    "caller_gid": { "type": "integer", "minimum": 1 },
+    "workload_id": { "const": "spiffe://crowsi/local/coela-topology-client" },
+    "client_executable_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "rate_limit_per_minute": { "type": "integer", "minimum": 1 },
+    "identity_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "public_key_hex", "key_id", "issuer", "audience", "service_id", "path",
+        "pairwise_subject", "device_id", "device_proof_key_ref", "session_ref"
+      ],
+      "properties": {
+        "public_key_hex": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "key_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "issuer": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "audience": { "const": "crowsi://topology-observer/current-status" },
+        "service_id": { "const": "service:crowsi" },
+        "path": { "type": "string", "pattern": "^/" },
+        "pairwise_subject": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "device_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "device_proof_key_ref": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "session_ref": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    }
+  }
+}
