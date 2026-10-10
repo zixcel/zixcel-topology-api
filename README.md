@@ -26,3 +26,18 @@ cargo test --locked
 [Usage guide](docs/getting-started.md)
 
 [Examples](examples) · [Implementation and public interfaces](src) · [Verification cases](tests) · [Contributing](CONTRIBUTING.md) · [Security reporting](SECURITY.md) · [License](LICENSE) · [Attribution notices](NOTICE)
+
+
+## Operational topology workspace
+
+`crates/zixcel-topology-observer` is the authenticated observer for this Zixcel
+topology service. Generic host network observation remains a Crowsi transport
+component. This service manages operational metadata, not credential values.
+
+```sh
+cargo test --locked --workspace --all-targets
+```
+
+Use the observer with an explicitly trusted topology endpoint and verified
+authorization. A supplied topology snapshot is not physical network discovery
+or evidence that an infrastructure change actually completed.
