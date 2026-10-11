@@ -36,7 +36,9 @@ fn run(
     }
     let server = Server::http(address).map_err(|error| error.to_string())?;
     for request in server.incoming_requests() {
-        respond(request, &database, address, signer.as_ref())?;
+        // Signing/framing and client disconnect failures belong to this request.
+        // Listener creation and identity loading still fail at startup.
+        let _ = respond(request, &database, address, signer.as_ref());
     }
     Ok(())
 }
@@ -47,6 +49,22 @@ fn respond(
     address: SocketAddr,
     signer: Option<&ResponseSigner>,
 ) -> Result<(), String> {
+    if request.method() != &tiny_http::Method::Get {
+        return send(
+            request,
+            405,
+            routing::error_body("method-not-allowed"),
+            None,
+        );
+    }
+    if format!("http://{address}{}", request.url()).len() > 2_048 {
+        return send(
+            request,
+            414,
+            routing::error_body("request-url-too-long"),
+            None,
+        );
+    }
     let protected = request.url().starts_with("/v1/");
     let nonce = header(&request, "X-Zixcel-Request-Nonce");
     let audience = header(&request, "X-Zixcel-Audience");
@@ -66,7 +84,15 @@ fn respond(
     let path = request.url().to_owned();
     let (status, value) = routing::route(request.method(), &path, database);
     let body = serde_json::to_vec(&value).map_err(|error| error.to_string())?;
-    let proof = if protected {
+    if protected && signer.is_some() && nonce.is_some_and(|value| value.len() != 43) {
+        return send(
+            request,
+            400,
+            routing::error_body("invalid-request-nonce"),
+            None,
+        );
+    }
+    let proof_result = if protected {
         signer
             .map(|value| {
                 value.sign(
@@ -78,9 +104,20 @@ fn respond(
                     crate::clock::epoch_seconds()?,
                 )
             })
-            .transpose()?
+            .transpose()
     } else {
-        None
+        Ok(None)
+    };
+    let proof = match proof_result {
+        Ok(proof) => proof,
+        Err(_) => {
+            return send(
+                request,
+                400,
+                routing::error_body("invalid-signed-request"),
+                None,
+            );
+        }
     };
     send(request, status, body, proof.as_ref())
 }
@@ -142,3 +179,6 @@ mod tests {
         assert!(parse_loopback("0.0.0.0:4211").is_err());
     }
 }
+
+#[cfg(test)]
+mod request_survival_tests;
