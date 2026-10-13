@@ -1,0 +1,161 @@
+{
+  "repository": "zixcel/zixcel-topology-api",
+  "purpose": "Serve a bounded metadata view of registered service, organization and deployment relationships.",
+  "responsibility_boundary": "Own the named reusable integration/data mechanism. Product roles/UI and operational approvals stay with consumers; transport/custody reuse managed Crowsi components where capabilities fit. Planning-only APIs must remain clearly distinguished from implemented external operations.",
+  "packages": [
+    {
+      "manifest": "Cargo.toml",
+      "package": "zixcel-topology-api",
+      "ecosystem": "rust",
+      "description": "Metadata-only operational topology API for Zixcel",
+      "interfaces": {
+        "lib": "src/lib.rs",
+        "features": {},
+        "bins": [],
+        "public_modules": [
+          "authentication",
+          "clock",
+          "http",
+          "model",
+          "source_contract",
+          "store"
+        ],
+        "public_reexports": [],
+        "implicit_bins": []
+      },
+      "declared_commands": {}
+    },
+    {
+      "manifest": "crates/zixcel-topology-observer/Cargo.toml",
+      "package": "zixcel-topology-observer",
+      "ecosystem": "rust",
+      "description": "Crowsi-attested local observation boundary for signed Zixcel topology",
+      "interfaces": {
+        "lib": "crates/zixcel-topology-observer/src/lib.rs",
+        "features": {},
+        "bins": [],
+        "public_modules": [],
+        "public_reexports": [
+          "canonical::{canonical_operation, operation_body_sha256, sha256_digest}",
+          "client::TopologyObservationClient",
+          "deployment::{TopologyObserverServer, load_server, read_owner_only_json}",
+          "error::ObserverError",
+          "handler::TopologyObservationHandler",
+          "model::{\n    CrowsiObservationEvidenceV1, ObservationBundleV1, ObservationReceiptV1,\n    TopologyObservationRequestV1, VerifiedResponseEvidenceV1,\n}",
+          "replay::ResponseReplayStore",
+          "trust::ZixcelResponseTrust"
+        ],
+        "implicit_bins": []
+      },
+      "declared_commands": {}
+    }
+  ],
+  "schema_definitions": [
+    "crates/zixcel-topology-observer/schemas/deployment-v3.schema.json"
+  ],
+  "test_sources": [
+    "crates/zixcel-topology-observer/src/deployment/legacy_tests.rs",
+    "crates/zixcel-topology-observer/src/deployment/tests.rs",
+    "crates/zixcel-topology-observer/src/http.rs",
+    "crates/zixcel-topology-observer/src/identity_status_deployment.rs",
+    "crates/zixcel-topology-observer/src/replay.rs",
+    "crates/zixcel-topology-observer/src/socket_path.rs",
+    "crates/zixcel-topology-observer/src/trust.rs",
+    "crates/zixcel-topology-observer/tests/attested_observation.rs",
+    "crates/zixcel-topology-observer/tests/private_ipc.rs",
+    "crates/zixcel-topology-observer/tests/private_state.rs",
+    "crates/zixcel-topology-observer/tests/support/material.rs",
+    "crates/zixcel-topology-observer/tests/support/material_status.rs",
+    "crates/zixcel-topology-observer/tests/support/mod.rs",
+    "crates/zixcel-topology-observer/tests/support/runtime.rs",
+    "crates/zixcel-topology-observer/tests/support/runtime_helpers.rs",
+    "crates/zixcel-topology-observer/tests/support/zixcel.rs",
+    "src/authentication/proof.rs",
+    "src/http/mod.rs",
+    "src/http/request_survival_tests.rs",
+    "src/http/routing.rs",
+    "src/main.rs",
+    "src/source_contract.rs",
+    "src/store/mutation.rs",
+    "src/url_path.rs",
+    "tests/authentication.rs",
+    "tests/source_contract.rs",
+    "tests/topology.rs"
+  ],
+  "example_sources": [],
+  "workflow_definitions": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "jobs": [
+        {
+          "job": "verify",
+          "condition": null,
+          "runs_on": "ubuntu-24.04",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Install declared Rust toolchain",
+              "run": "rustup toolchain install 1.97 --profile minimal --component rustfmt --component clippy",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Check every maintained package",
+              "run": "cargo +1.97 fmt --all -- --check\ncargo +1.97 clippy --locked --workspace --all-targets --all-features -- -D warnings\ncargo +1.97 test --locked --workspace --all-targets --all-features\ncargo +1.97 test --locked --workspace --doc --all-features\ncargo +1.97 build --locked --workspace --bins\n",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Audit exact dependency lock",
+              "run": "cargo install cargo-audit --version 0.22.2 --locked --no-default-features --root \"$RUNNER_TEMP/audit\"\n\"$RUNNER_TEMP/audit/bin/cargo-audit\" audit --deny warnings\n",
+              "uses": null,
+              "condition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/oss-policy.yml",
+      "jobs": [
+        {
+          "job": "repository-policy",
+          "condition": null,
+          "runs_on": "ubuntu-latest",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Verify repository policy",
+              "run": "python3 .github/oss-policy-check.py",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Verify policy regression tests",
+              "run": "cd .github && python3 -m unittest discover -s policy-tests",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Check policy types",
+              "run": "python3 -m venv \"$RUNNER_TEMP/policy-types\"\n\"$RUNNER_TEMP/policy-types/bin/pip\" install -r .github/policy/requirements.txt\n\"$RUNNER_TEMP/policy-types/bin/mypy\" --strict .github/policy .github/oss-policy-check.py .github/policy-tests\n",
+              "uses": null,
+              "condition": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "evidence_policy": "Declarations and source paths are not proof of an executed acceptance. Exact CI head and result are recorded separately. No live accounts or production acceptance is inferred."
+}
