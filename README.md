@@ -62,3 +62,5 @@ Deployment owns scheduling, identities, private runtime paths and endpoint trust
 [Security](SECURITY.md) · [License](LICENSE) · [Notices](NOTICE)
 
 [OSS responsibility and source completion](docs/oss-source-contract.md) defines the supported package boundary and required acceptance. It does not declare unexecuted source, distribution or production checks complete.
+
+Dependency updates: [repository policy](docs/dependency-updates.md).
