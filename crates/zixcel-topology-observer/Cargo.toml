@@ -12,7 +12,7 @@ repository = "https://github.com/zixcel/zixcel-topology-api"
 
 
 [dependencies]
-base64 = "0.22.1"
+base64 = "0.23.1"
 crowsi-local-control-bridge = { version = "=0.1.0" }
 ed25519-dalek = "2.2.0"
 hex = "0.4.3"
