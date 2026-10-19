@@ -81,7 +81,14 @@ impl ResponseSigner {
             request_url: url,
             request_nonce: nonce,
             response_status: status,
-            body_sha256: format!("sha256:{:x}", Sha256::digest(body)),
+            body_sha256: (Sha256::digest(body)).iter().fold(
+                String::from("sha256:"),
+                |mut encoded, byte| {
+                    use std::fmt::Write as _;
+                    write!(encoded, "{byte:02x}").expect("writing to String cannot fail");
+                    encoded
+                },
+            ),
             proof_key_thumbprint: &self.policy.proof_key_thumbprint,
             issued_at_epoch_s: now_epoch_s,
             expires_at_epoch_s: now_epoch_s

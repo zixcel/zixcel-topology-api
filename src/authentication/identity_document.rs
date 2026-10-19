@@ -114,7 +114,13 @@ pub(super) fn encode(value: &[u8]) -> String {
 }
 
 pub(super) fn thumbprint(value: &[u8]) -> String {
-    format!("sha256:{:x}", Sha256::digest(value))
+    (Sha256::digest(value))
+        .iter()
+        .fold(String::from("sha256:"), |mut encoded, byte| {
+            use std::fmt::Write as _;
+            write!(encoded, "{byte:02x}").expect("writing to String cannot fail");
+            encoded
+        })
 }
 
 fn decode_32(value: &str) -> Result<[u8; 32], String> {
