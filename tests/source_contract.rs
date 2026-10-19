@@ -122,10 +122,13 @@ fn source_bytes(unknown: bool, platform_path: bool) -> Vec<u8> {
         edges: &edges,
     })
     .expect("payload value");
-    let digest = format!(
-        "{:x}",
-        Sha256::digest(serde_json::to_vec(&canonical).unwrap())
-    );
+    let digest = (Sha256::digest(serde_json::to_vec(&canonical).unwrap()))
+        .iter()
+        .fold(String::with_capacity(64), |mut encoded, byte| {
+            use std::fmt::Write as _;
+            write!(encoded, "{byte:02x}").expect("writing to String cannot fail");
+            encoded
+        });
     serde_json::to_vec(&json!({
         "schema": "zixcel://topology/source/v1", "payload_sha256": digest,
         "catalog_as_of": catalog_as_of, "nodes": nodes, "edges": edges

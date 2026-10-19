@@ -57,7 +57,15 @@ pub fn read_bytes(bytes: &[u8]) -> Result<TopologyDocument, String> {
     })
     .map_err(|error| error.to_string())?;
     let payload = serde_json::to_vec(&payload_value).map_err(|error| error.to_string())?;
-    if format!("{:x}", Sha256::digest(payload)) != source.payload_sha256 {
+    if (Sha256::digest(payload))
+        .iter()
+        .fold(String::with_capacity(64), |mut encoded, byte| {
+            use std::fmt::Write as _;
+            write!(encoded, "{byte:02x}").expect("writing to String cannot fail");
+            encoded
+        })
+        != source.payload_sha256
+    {
         return Err("topology source digest differs".into());
     }
     let document = TopologyDocument {
