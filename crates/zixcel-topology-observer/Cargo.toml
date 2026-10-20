@@ -14,9 +14,9 @@ repository = "https://github.com/zixcel/zixcel-topology-api"
 [dependencies]
 base64 = "0.23.1"
 crowsi-local-control-bridge = { version = "=0.1.0" }
-ed25519-dalek = "2.2.0"
+ed25519-dalek = "3.0.0"
 hex = "0.4.3"
-nix = { version = "0.29.0", features = ["user"] }
+nix = { version = "0.31.3", features = ["user", "socket"] }
 rusqlite = { version = "0.37.0", features = ["bundled"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"

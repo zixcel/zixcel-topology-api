@@ -2,7 +2,6 @@ use std::fs;
 use std::path::Path;
 
 use ed25519_dalek::SigningKey;
-use rand_core::OsRng;
 use zeroize::Zeroizing;
 
 use super::identity_document::{PrivateIdentity, TrustBundle, encode, thumbprint, validate_policy};
@@ -27,7 +26,9 @@ pub fn generate_identity(
     if private_path.exists() || trust_path.exists() {
         return Err("topology identity already exists; rotation must be explicit".to_owned());
     }
-    let signing = SigningKey::generate(&mut OsRng);
+    let mut seed = Zeroizing::new([0_u8; 32]);
+    getrandom::fill(seed.as_mut()).map_err(|_| "system entropy unavailable".to_owned())?;
+    let signing = SigningKey::from_bytes(&seed);
     let public = signing.verifying_key().to_bytes();
     let public_text = encode(&public);
     let thumbprint = thumbprint(&public);
