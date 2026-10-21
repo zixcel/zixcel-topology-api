@@ -119,7 +119,7 @@ mod tests {
     #[test]
     fn provisioned_audiences_are_bounded_and_cannot_inject_headers() {
         for (audience, accepted) in [
-            ("coela-control".to_owned(), true),
+            ("example-console".to_owned(), true),
             ("catalog-console".to_owned(), true),
             (String::new(), false),
             ("other\r\nInjected: value".to_owned(), false),
