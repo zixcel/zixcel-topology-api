@@ -13,18 +13,18 @@ repository = "https://github.com/zixcel/zixcel-topology-api"
 
 [dependencies]
 base64 = "0.23.1"
-crowsi-local-control-bridge = { version = "=0.1.0" }
+crowsi-local-control-bridge = { version = "=0.1.1" }
 ed25519-dalek = "3.0.0"
 hex = "0.4.3"
 nix = { version = "0.31.3", features = ["user", "socket"] }
-rusqlite = { version = "0.37.0", features = ["bundled"] }
+rusqlite = { version = "0.40.2", features = ["bundled"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 sha2 = "0.11.1"
 thiserror = "2.0.18"
 
 [dev-dependencies]
-ihat-identity-assertion-contracts = { version = "=0.10.0" }
+ihat-identity-assertion-contracts = { version = "=0.10.1" }
 tempfile = "3.27.0"
 
 [lints.rust]
